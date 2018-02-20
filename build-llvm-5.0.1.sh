@@ -18,8 +18,6 @@ CLANG_RELEASE_ARCHIVE_URL="http://releases.llvm.org/${LLVM_VERSION}/${CLANG_RELE
 tmp_dir="llvm-${LLVM_VERSION}-tmp-workdir"
 
 mkdir -p "$tmp_dir" && pushd "$tmp_dir"
-# tmp_dir="$(mktemp -d)"
-# trap "rm -rf '${tmp_dir}'" EXIT
 
 curl -L -v -O "$LLVM_RELEASE_ARCHIVE_URL" \
   && tar xvf "$LLVM_RELEASE_ARCHIVE_NAME"
