@@ -13,7 +13,7 @@ set -euxo pipefail
 LLVM_VERSION='5.0.1'
 CORRESPONDING_CLANG_BIN_VERSION='5.0'
 LLVM_RELEASE_BUILD_DIRNAME='llvm-build'
-LLVM_PANTS_ARCHIVE_NAME='llvm.tar.gz'
+LLVM_PANTS_ARCHIVE_NAME='compiler.tar.gz'
 LLVM_SUPPORTDIR='build-support/bin/llvm'
 
 # default to -j2

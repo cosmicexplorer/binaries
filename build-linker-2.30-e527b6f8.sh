@@ -11,7 +11,7 @@ LLVM_CONFIG_LOCATION="$1"
 set -euxo pipefail
 
 LINKER_TOOLS_SUPPORTDIR='build-support/bin/linker-tools'
-LINKER_TOOLS_PANTS_ARCHIVE_NAME='linker-tools.tar.gz'
+LINKER_TOOLS_PANTS_ARCHIVE_NAME='linker.tar.gz'
 # NB: This script produces a tar archive with the same file paths for linux and
 # osx, but the file contents are platform-specific. Linux uses the binutils 2.30
 # release ($BINUTILS_VERSION), while OSX uses a SHA from a github repo
