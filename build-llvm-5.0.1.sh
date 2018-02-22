@@ -1,42 +1,105 @@
-#!/bin/sh
+#!/bin/bash
+
+if ! hash xz; then
+  cat >&2 <<EOF
+'xz' is required to run this script. You may have to install it using your
+operating system's package manager.
+EOF
+  exit 1
+fi
 
 set -euxo pipefail
 
 LLVM_VERSION='5.0.1'
 CORRESPONDING_CLANG_BIN_VERSION='5.0'
-LLVM_RELEASE_BUILD_DIRNAME='build'
+LLVM_RELEASE_BUILD_DIRNAME='llvm-build'
 LLVM_PANTS_ARCHIVE_NAME='llvm.tar.gz'
-
-LLVM_RELEASE_UNPACKED_ARCHIVE_DIRNAME="llvm-${LLVM_VERSION}.src"
-LLVM_RELEASE_ARCHIVE_NAME="${LLVM_RELEASE_UNPACKED_ARCHIVE_DIRNAME}.tar.xz"
-LLVM_RELEASE_ARCHIVE_URL="http://releases.llvm.org/${LLVM_VERSION}/${LLVM_RELEASE_ARCHIVE_NAME}"
-
-CLANG_RELEASE_UNPACKED_ARCHIVE_DIRNAME="cfe-${LLVM_VERSION}.src"
-CLANG_RELEASE_ARCHIVE_NAME="${CLANG_RELEASE_UNPACKED_ARCHIVE_DIRNAME}.tar.xz"
-CLANG_RELEASE_ARCHIVE_URL="http://releases.llvm.org/${LLVM_VERSION}/${CLANG_RELEASE_ARCHIVE_NAME}"
-
-tmp_dir="llvm-${LLVM_VERSION}-tmp-workdir"
-
-mkdir -p "$tmp_dir" && pushd "$tmp_dir"
-
-curl -L -v -O "$LLVM_RELEASE_ARCHIVE_URL" \
-  && tar xvf "$LLVM_RELEASE_ARCHIVE_NAME"
-
-curl -L -v -O "$CLANG_RELEASE_ARCHIVE_URL" \
-  && tar xvf "$CLANG_RELEASE_ARCHIVE_NAME"
-
-mkdir -p "$LLVM_RELEASE_BUILD_DIRNAME" && pushd "$LLVM_RELEASE_BUILD_DIRNAME"
-
-cmake \
-  -DLLVM_EXTERNAL_CLANG_SOURCE_DIR="../${CLANG_RELEASE_UNPACKED_ARCHIVE_DIRNAME}" \
-  -DLLVM_EXTERNAL_PROJECTS='clang' \
-  "../${LLVM_RELEASE_UNPACKED_ARCHIVE_DIRNAME}"
+LLVM_SUPPORTDIR='build-support/bin/llvm'
 
 # default to -j2
 MAKE_JOBS="${MAKE_JOBS:-2}"
+
+mkdir -p "$LLVM_RELEASE_BUILD_DIRNAME"
+
+
+## MacOS (LLVM-packaged release binaries)
+MACOS_REVS=(
+  10.7
+  10.8
+  10.9
+  10.10
+  10.11
+  10.12
+  10.13
+)
+
+pushd "$LLVM_RELEASE_BUILD_DIRNAME"
+
+curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-apple-darwin.tar.xz"
+tar xf "clang+llvm-${LLVM_VERSION}-x86_64-apple-darwin.tar.xz"
+pushd "clang+llvm-${LLVM_VERSION}-final-x86_64-apple-darwin"
+tar czf "$LLVM_PANTS_ARCHIVE_NAME" \
+    bin/clang \
+    bin/clang++ \
+    "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
+llvm_macos_packaged="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
+popd
+
+popd
+
+for rev in ${MACOS_REVS[@]}; do
+  dest_base="${LLVM_SUPPORTDIR}/mac/${rev}/${LLVM_VERSION}"
+  mkdir -p "$dest_base"
+  cp "$llvm_macos_packaged" "${dest_base}/${LLVM_PANTS_ARCHIVE_NAME}"
+done
+
+
+## Linux (from source release)
+# We need cmake >= 3.4, so use the one we already build for pants.
+CMAKE_VERSION='3.9.5'
+CMAKE_BUILD_TMP_DIR='cmake-build-tmp'
+LLVM_BUILD_TMP_DIR='llvm-build'
+
+"./build-cmake-${CMAKE_VERSION}.sh"
+cmake_linux_packaged="$(pwd)/build-support/bin/cmake/linux/x86_64/${CMAKE_VERSION}/cmake.tar.gz"
+
+mkdir -p "$CMAKE_BUILD_TMP_DIR"
+pushd "$CMAKE_BUILD_TMP_DIR"
+tar zxf "$cmake_linux_packaged"
+cmake_linux_bin="$(pwd)/bin/cmake"
+popd
+
+pushd "$LLVM_RELEASE_BUILD_DIRNAME"
+
+# LLVM requires you to download the source for LLVM and the Clang frontend
+# separately. The alternative is checking out their SVN repo, which takes much
+# longer.
+curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/cfe-${LLVM_VERSION}.src.tar.xz"
+tar xf "llvm-${LLVM_VERSION}.src.tar.xz"
+tar xf "cfe-${LLVM_VERSION}.src.tar.xz"
+
+mkdir -p "$LLVM_BUILD_TMP_DIR"
+pushd "$LLVM_BUILD_TMP_DIR"
+
+"$cmake_linux_bin" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_EXTERNAL_CLANG_SOURCE_DIR="../cfe-${LLVM_VERSION}.src" \
+  -DLLVM_EXTERNAL_PROJECTS='clang' \
+  "../llvm-${LLVM_VERSION}.src"
+
 make -j"$MAKE_JOBS"
 
 tar cvzf "$LLVM_PANTS_ARCHIVE_NAME" \
     bin/clang \
     bin/clang++ \
     "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
+
+llvm_linux_packaged="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
+
+popd
+
+popd
+
+mkdir -p "${LLVM_SUPPORTDIR}/linux/x86_64/${LLVM_VERSION}"
+cp "$llvm_linux_packaged" "${LLVM_SUPPORTDIR}/linux/x86_64/${LLVM_VERSION}/${LLVM_PANTS_ARCHIVE_NAME}"
