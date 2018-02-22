@@ -7,7 +7,7 @@
 LLVM_CONFIG_LOCATION="$1"
 
 # Put safe mode below extracting arguments so we don't choke if this is run with
-# no arguments.
+# no arguments (valid for Linux).
 set -euxo pipefail
 
 LINKER_TOOLS_SUPPORTDIR='build-support/bin/linker-tools'
