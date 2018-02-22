@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# only for osx: this is a path to an osx binary for llvm-config, which is needed
-# to compile cctools. After running ./build-llvm-5.0.1.sh, llvm-config should be
-# located at something like:
+# Only for MacOS: this is a path to an osx binary for llvm-config, which is
+# needed to compile cctools. After running ./build-llvm-5.0.1.sh, llvm-config
+# should be located at something like:
 # llvm-build/clang+llvm-5.0.1-final-x86_64-apple-darwin/bin/llvm-config
 LLVM_CONFIG_LOCATION="$1"
 
