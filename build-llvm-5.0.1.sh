@@ -42,7 +42,7 @@ tar czf "$LLVM_PANTS_ARCHIVE_NAME" \
     bin/clang \
     bin/clang++ \
     "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
-llvm_macos_packaged="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
+llvm_macos_packaged_abs="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
 popd
 
 popd
@@ -50,7 +50,7 @@ popd
 for rev in ${MACOS_REVS[@]}; do
   dest_base="${LLVM_SUPPORTDIR}/mac/${rev}/${LLVM_VERSION}"
   mkdir -p "$dest_base"
-  cp "$llvm_macos_packaged" "${dest_base}/${LLVM_PANTS_ARCHIVE_NAME}"
+  cp "$llvm_macos_packaged_abs" "${dest_base}/${LLVM_PANTS_ARCHIVE_NAME}"
 done
 
 
@@ -61,12 +61,12 @@ CMAKE_BUILD_TMP_DIR='cmake-build-tmp'
 LLVM_BUILD_TMP_DIR='llvm-build'
 
 "./build-cmake-${CMAKE_VERSION}.sh"
-cmake_linux_packaged="$(pwd)/build-support/bin/cmake/linux/x86_64/${CMAKE_VERSION}/cmake.tar.gz"
+cmake_linux_packaged_abs="$(pwd)/build-support/bin/cmake/linux/x86_64/${CMAKE_VERSION}/cmake.tar.gz"
 
 mkdir -p "$CMAKE_BUILD_TMP_DIR"
 pushd "$CMAKE_BUILD_TMP_DIR"
-tar zxf "$cmake_linux_packaged"
-cmake_linux_bin="$(pwd)/bin/cmake"
+tar zxf "$cmake_linux_packaged_abs"
+cmake_linux_bin_abs="$(pwd)/bin/cmake"
 popd
 
 pushd "$LLVM_RELEASE_BUILD_DIRNAME"
@@ -82,7 +82,7 @@ tar xf "cfe-${LLVM_VERSION}.src.tar.xz"
 mkdir -p "$LLVM_BUILD_TMP_DIR"
 pushd "$LLVM_BUILD_TMP_DIR"
 
-"$cmake_linux_bin" \
+"$cmake_linux_bin_abs" \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_EXTERNAL_CLANG_SOURCE_DIR="../cfe-${LLVM_VERSION}.src" \
   -DLLVM_EXTERNAL_PROJECTS='clang' \
@@ -95,11 +95,11 @@ tar cvzf "$LLVM_PANTS_ARCHIVE_NAME" \
     bin/clang++ \
     "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
 
-llvm_linux_packaged="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
+llvm_linux_packaged_abs="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
 
 popd
 
 popd
 
 mkdir -p "${LLVM_SUPPORTDIR}/linux/x86_64/${LLVM_VERSION}"
-cp "$llvm_linux_packaged" "${LLVM_SUPPORTDIR}/linux/x86_64/${LLVM_VERSION}/${LLVM_PANTS_ARCHIVE_NAME}"
+cp "$llvm_linux_packaged_abs" "${LLVM_SUPPORTDIR}/linux/x86_64/${LLVM_VERSION}/${LLVM_PANTS_ARCHIVE_NAME}"

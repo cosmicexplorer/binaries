@@ -52,14 +52,14 @@ EOF
   cp "../binutils-${BINUTILS_VERSION}/ld/ld-new" bin/ld
   tar cvzf "$LINKER_TOOLS_PANTS_ARCHIVE_NAME" \
       bin/ld
-  local linker_tools_linux_packaged="$(pwd)/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+  local linker_tools_linux_packaged_abs="$(pwd)/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
 
   popd
 
   popd
 
   mkdir -p "${LINKER_TOOLS_SUPPORTDIR}/linux/x86_64/${LINKER_TOOLS_VERSION}"
-  cp "$linker_tools_linux_packaged" "${LINKER_TOOLS_SUPPORTDIR}/linux/x86_64/${LINKER_TOOLS_VERSION}/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+  cp "$linker_tools_linux_packaged_abs" "${LINKER_TOOLS_SUPPORTDIR}/linux/x86_64/${LINKER_TOOLS_VERSION}/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
 }
 
 
@@ -107,7 +107,7 @@ function make_cctools {
   cp '../cctools-port/cctools/ld64/src/ld/ld' bin/ld
   tar cvzf "$LINKER_TOOLS_PANTS_ARCHIVE_NAME" \
       bin/ld
-  local linker_tools_macos_packaged="$(pwd)/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+  local linker_tools_macos_packaged_abs="$(pwd)/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
   popd
 
   popd
@@ -115,7 +115,7 @@ function make_cctools {
   for rev in ${MACOS_REVS[@]}; do
     dest_base="${LINKER_TOOLS_SUPPORTDIR}/mac/${rev}/${LINKER_TOOLS_VERSION}"
     mkdir -p "$dest_base"
-    cp "$linker_tools_macos_packaged" "${dest_base}/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+    cp "$linker_tools_macos_packaged_abs" "${dest_base}/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
   done
 
   PATH="${prevpath}"
