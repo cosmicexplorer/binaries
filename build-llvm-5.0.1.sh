@@ -59,6 +59,7 @@ done
 CMAKE_VERSION='3.9.5'
 CMAKE_BUILD_TMP_DIR='cmake-build-tmp'
 LLVM_BUILD_TMP_DIR='llvm-build'
+LLVM_TMP_PKG_DIR='llvm-pkg'
 
 "./build-cmake-${CMAKE_VERSION}.sh"
 cmake_linux_packaged_abs="$(pwd)/build-support/bin/cmake/linux/x86_64/${CMAKE_VERSION}/cmake.tar.gz"
@@ -90,12 +91,24 @@ pushd "$LLVM_BUILD_TMP_DIR"
 
 make -j"$MAKE_JOBS"
 
-tar cvzf "$LLVM_PANTS_ARCHIVE_NAME" \
-    bin/clang \
-    bin/clang++ \
-    "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
+llvm_built_dir_abs="$(pwd)"
+
+popd
+
+mkdir -p "$LLVM_TMP_PKG_DIR"
+pushd "$LLVM_TMP_PKG_DIR"
+
+mkdir -p include/
+cp "$llvm_built_dir_abs"/lib/clang/"${LLVM_VERSION}"/include/*.h include/
+
+mkdir -p bin/
+cp "$llvm_built_dir_abs"/bin/{clang,clang++,clang-"${CORRESPONDING_CLANG_BIN_VERSION}"} bin/
+
+tar cvzf "$LLVM_PANTS_ARCHIVE_NAME" *
 
 llvm_linux_packaged_abs="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
+
+popd
 
 popd
 
