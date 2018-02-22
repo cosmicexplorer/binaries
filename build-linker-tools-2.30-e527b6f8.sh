@@ -85,6 +85,9 @@ CCTOOLS_SHA='e527b6f87f0613de7ec6d214f81d41fb5621a5b0'
 CCTOOLS_TMP_ARCHIVE_CREATION_DIR='cctools-tmp'
 
 function make_cctools {
+  # Compilation fails if any gnu tools are used -- since this isn't run in a
+  # virtual machine, ensure that default osx tools are used instead of
+  # e.g. homebrew.
   local prevpath="$PATH"
   PATH="/bin:/usr/bin:${prevpath}"
 
