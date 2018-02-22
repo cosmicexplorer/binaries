@@ -10,15 +10,15 @@ LLVM_CONFIG_LOCATION="$1"
 # no arguments (valid for Linux).
 set -euxo pipefail
 
-LINKER_TOOLS_SUPPORTDIR='build-support/bin/linker-tools'
-LINKER_TOOLS_PANTS_ARCHIVE_NAME='linker.tar.gz'
+LINKER_SUPPORTDIR='build-support/bin/linker'
+LINKER_PANTS_ARCHIVE_NAME='linker.tar.gz'
 # NB: This script produces a tar archive with the same file paths for linux and
 # osx, but the file contents are platform-specific. Linux uses the binutils 2.30
 # release ($BINUTILS_VERSION), while OSX uses a SHA from a github repo
 # ($CCTOOLS_SHA). Combining the versions in this way makes it more difficult to
 # accidentally use incorrect versions.
-LINKER_TOOLS_VERSION='2.30-e527b6f8'
-LINKER_TOOLS_BUILD_TMP_DIR='linker-tools'
+LINKER_VERSION='2.30-e527b6f8'
+LINKER_BUILD_TMP_DIR='linker-tmp'
 
 # default to -j2
 MAKE_JOBS="${MAKE_JOBS:-2}"
@@ -37,8 +37,8 @@ EOF
     exit 1
   fi
 
-  mkdir -p "$LINKER_TOOLS_BUILD_TMP_DIR"
-  pushd "$LINKER_TOOLS_BUILD_TMP_DIR"
+  mkdir -p "$LINKER_BUILD_TMP_DIR"
+  pushd "$LINKER_BUILD_TMP_DIR"
 
   curl -L -O "https://ftpmirror.gnu.org/binutils/binutils-${BINUTILS_VERSION}.tar.xz"
   tar xf "binutils-${BINUTILS_VERSION}.tar.xz"
@@ -55,16 +55,16 @@ EOF
 
   mkdir bin
   cp "../binutils-${BINUTILS_VERSION}/ld/ld-new" bin/ld
-  tar cvzf "$LINKER_TOOLS_PANTS_ARCHIVE_NAME" \
+  tar cvzf "$LINKER_PANTS_ARCHIVE_NAME" \
       bin/ld
-  local linker_tools_linux_packaged_abs="$(pwd)/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+  local linker_tools_linux_packaged_abs="$(pwd)/${LINKER_PANTS_ARCHIVE_NAME}"
 
   popd
 
   popd
 
-  mkdir -p "${LINKER_TOOLS_SUPPORTDIR}/linux/x86_64/${LINKER_TOOLS_VERSION}"
-  cp "$linker_tools_linux_packaged_abs" "${LINKER_TOOLS_SUPPORTDIR}/linux/x86_64/${LINKER_TOOLS_VERSION}/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+  mkdir -p "${LINKER_SUPPORTDIR}/linux/x86_64/${LINKER_VERSION}"
+  cp "$linker_tools_linux_packaged_abs" "${LINKER_SUPPORTDIR}/linux/x86_64/${LINKER_VERSION}/${LINKER_PANTS_ARCHIVE_NAME}"
 }
 
 
@@ -91,8 +91,8 @@ function make_cctools {
   local prevpath="$PATH"
   PATH="/bin:/usr/bin:${prevpath}"
 
-  mkdir -p "$LINKER_TOOLS_BUILD_TMP_DIR"
-  pushd "$LINKER_TOOLS_BUILD_TMP_DIR"
+  mkdir -p "$LINKER_BUILD_TMP_DIR"
+  pushd "$LINKER_BUILD_TMP_DIR"
 
   rm -rf 'cctools-port'
   git clone --depth 1 "$CCTOOLS_REPO_URL"
@@ -113,17 +113,17 @@ function make_cctools {
 
   mkdir -p bin
   cp '../cctools-port/cctools/ld64/src/ld/ld' bin/ld
-  tar cvzf "$LINKER_TOOLS_PANTS_ARCHIVE_NAME" \
+  tar cvzf "$LINKER_PANTS_ARCHIVE_NAME" \
       bin/ld
-  local linker_tools_macos_packaged_abs="$(pwd)/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+  local linker_tools_macos_packaged_abs="$(pwd)/${LINKER_PANTS_ARCHIVE_NAME}"
   popd
 
   popd
 
   for rev in ${MACOS_REVS[@]}; do
-    dest_base="${LINKER_TOOLS_SUPPORTDIR}/mac/${rev}/${LINKER_TOOLS_VERSION}"
+    dest_base="${LINKER_SUPPORTDIR}/mac/${rev}/${LINKER_VERSION}"
     mkdir -p "$dest_base"
-    cp "$linker_tools_macos_packaged_abs" "${dest_base}/${LINKER_TOOLS_PANTS_ARCHIVE_NAME}"
+    cp "$linker_tools_macos_packaged_abs" "${dest_base}/${LINKER_PANTS_ARCHIVE_NAME}"
   done
 
   PATH="${prevpath}"
