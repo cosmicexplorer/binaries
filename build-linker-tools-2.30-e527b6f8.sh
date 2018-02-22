@@ -12,7 +12,12 @@ set -euxo pipefail
 
 LINKER_TOOLS_SUPPORTDIR='build-support/bin/linker-tools'
 LINKER_TOOLS_PANTS_ARCHIVE_NAME='linker-tools.tar.gz'
-LINKER_TOOLS_VERSION='1.0.0'
+# NB: This script produces a tar archive with the same file paths for linux and
+# osx, but the file contents are platform-specific. Linux uses the binutils 2.30
+# release ($BINUTILS_VERSION), while OSX uses a SHA from a github repo
+# ($CCTOOLS_SHA). Combining the versions in this way makes it more difficult to
+# accidentally use incorrect versions.
+LINKER_TOOLS_VERSION='2.30-e527b6f8'
 LINKER_TOOLS_BUILD_TMP_DIR='linker-tools'
 
 # default to -j2
