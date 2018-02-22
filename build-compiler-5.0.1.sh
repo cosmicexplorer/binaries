@@ -35,23 +35,23 @@ MACOS_REVS=(
 
 pushd "$LLVM_RELEASE_BUILD_DIRNAME"
 
-# curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-apple-darwin.tar.xz"
-# tar xf "clang+llvm-${LLVM_VERSION}-x86_64-apple-darwin.tar.xz"
+curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-apple-darwin.tar.xz"
+tar xf "clang+llvm-${LLVM_VERSION}-x86_64-apple-darwin.tar.xz"
 pushd "clang+llvm-${LLVM_VERSION}-final-x86_64-apple-darwin"
-# tar czf "$LLVM_PANTS_ARCHIVE_NAME" \
-#     bin/clang \
-#     bin/clang++ \
-#     "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
+tar czf "$LLVM_PANTS_ARCHIVE_NAME" \
+    bin/clang \
+    bin/clang++ \
+    "bin/clang-${CORRESPONDING_CLANG_BIN_VERSION}"
 llvm_macos_packaged_abs="$(pwd)/${LLVM_PANTS_ARCHIVE_NAME}"
 popd
 
 popd
 
-# for rev in ${MACOS_REVS[@]}; do
-#   dest_base="${LLVM_SUPPORTDIR}/mac/${rev}/${LLVM_VERSION}"
-#   mkdir -p "$dest_base"
-#   cp "$llvm_macos_packaged_abs" "${dest_base}/${LLVM_PANTS_ARCHIVE_NAME}"
-# done
+for rev in ${MACOS_REVS[@]}; do
+  dest_base="${LLVM_SUPPORTDIR}/mac/${rev}/${LLVM_VERSION}"
+  mkdir -p "$dest_base"
+  cp "$llvm_macos_packaged_abs" "${dest_base}/${LLVM_PANTS_ARCHIVE_NAME}"
+done
 
 
 ## Linux (from source release)
@@ -61,12 +61,12 @@ CMAKE_BUILD_TMP_DIR='cmake-build-tmp'
 LLVM_BUILD_TMP_DIR='llvm-build'
 LLVM_TMP_PKG_DIR='llvm-pkg'
 
-# "./build-cmake-${CMAKE_VERSION}.sh"
+"./build-cmake-${CMAKE_VERSION}.sh"
 cmake_linux_packaged_abs="$(pwd)/build-support/bin/cmake/linux/x86_64/${CMAKE_VERSION}/cmake.tar.gz"
 
 mkdir -p "$CMAKE_BUILD_TMP_DIR"
 pushd "$CMAKE_BUILD_TMP_DIR"
-# tar zxf "$cmake_linux_packaged_abs"
+tar zxf "$cmake_linux_packaged_abs"
 cmake_linux_bin_abs="$(pwd)/bin/cmake"
 popd
 
@@ -75,21 +75,21 @@ pushd "$LLVM_RELEASE_BUILD_DIRNAME"
 # LLVM requires you to download the source for LLVM and the Clang frontend
 # separately. The alternative is checking out their SVN repo, which takes much
 # longer.
-# curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
-# curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/cfe-${LLVM_VERSION}.src.tar.xz"
-# tar xf "llvm-${LLVM_VERSION}.src.tar.xz"
-# tar xf "cfe-${LLVM_VERSION}.src.tar.xz"
+curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+curl -L -O "https://releases.llvm.org/${LLVM_VERSION}/cfe-${LLVM_VERSION}.src.tar.xz"
+tar xf "llvm-${LLVM_VERSION}.src.tar.xz"
+tar xf "cfe-${LLVM_VERSION}.src.tar.xz"
 
 mkdir -p "$LLVM_BUILD_TMP_DIR"
 pushd "$LLVM_BUILD_TMP_DIR"
 
-# "$cmake_linux_bin_abs" \
-#   -DCMAKE_BUILD_TYPE=Release \
-#   -DLLVM_EXTERNAL_CLANG_SOURCE_DIR="../cfe-${LLVM_VERSION}.src" \
-#   -DLLVM_EXTERNAL_PROJECTS='clang' \
-#   "../llvm-${LLVM_VERSION}.src"
+"$cmake_linux_bin_abs" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_EXTERNAL_CLANG_SOURCE_DIR="../cfe-${LLVM_VERSION}.src" \
+  -DLLVM_EXTERNAL_PROJECTS='clang' \
+  "../llvm-${LLVM_VERSION}.src"
 
-# make -j"$MAKE_JOBS"
+make -j"$MAKE_JOBS"
 
 llvm_built_dir_abs="$(pwd)"
 
